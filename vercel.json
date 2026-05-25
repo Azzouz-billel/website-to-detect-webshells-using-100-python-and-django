@@ -2,14 +2,19 @@
     "version": 2,
     "builds": [
         {
-            "src": "core_folder_name/wsgi.py",
-            "use": "@vercel/python"
+            "src": "detector/wsgi.py",
+            "use": "@vercel/python",
+            "config": { "maxLambdaSize": "15mb", "runtime": "python3.9" }
         }
     ],
     "routes": [
         {
+            "src": "/static/(.*)",
+            "dest": "static/$1"
+        },
+        {
             "src": "/(.*)",
-            "dest": "core_folder_name/wsgi.py"
+            "dest": "detector/wsgi.py"
         }
     ]
 }
