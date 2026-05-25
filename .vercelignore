@@ -1,0 +1,22 @@
+# Ignore heavy dataset folders
+WhiteBlackPHP/
+dataset/
+data/
+
+# Ignore local python virtual environments
+env/
+venv/
+.venv/
+myenv/
+
+# Ignore local git histories and cache data
+.git/
+.github/
+.pytest_cache/
+__pycache__/
+*.pyc
+
+# Ignore testing or raw log files
+*.log
+*.tar.gz
+*.zip
