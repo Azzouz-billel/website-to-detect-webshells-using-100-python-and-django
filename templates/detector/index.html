@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+
+{% block title %}AegisPHP // Scanner Home{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <!-- Main Interface Header -->
+        <div class="col-lg-10 text-center mb-5">
+            <h1 class="display-5 fw-extrabold tracking-tight text-white">PHP Webshell Detector</h1>
+            <p class="lead text-secondary max-width-md mx-auto">
+                Scan PHP files for hidden shell features and backdoor patterns using a custom-engineered <strong>42-layer feedforward neural network</strong> built entirely in NumPy.
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center g-4">
+        <!-- Left Side: Upload Panel -->
+        <div class="col-lg-5">
+            <div class="card card-cyber bg-darker border-dark-glow h-100">
+                <div class="card-header border-bottom border-dark-glow bg-dark-glow d-flex align-items-center gap-2">
+                    <i class="bi bi-file-earmark-arrow-up text-cyan fs-5"></i>
+                    <h5 class="mb-0 fw-bold tracking-wide">SCANNER CONSOLE</h5>
+                </div>
+                <div class="card-body d-flex flex-column justify-content-between p-4">
+                    <form method="POST" enctype="multipart/form-data" id="scan-form">
+                        {% csrf_token %}                        <div class="mb-4">
+                            <label for="php_file_input" class="form-label text-cyan fw-bold mb-2">Upload PHP Script</label>
+                            {{ form.php_file }}
+                            {% if form.php_file.errors %}
+                                <div class="alert alert-danger-cyber mt-3 fs-7" role="alert">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    {{ form.php_file.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <div class="form-text text-secondary mt-2 fs-8">
+                                <i class="bi bi-info-circle me-1"></i> Acceptable format: <strong>.php</strong> (Max size: <strong>2MB</strong>)
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-cyber-glow w-100 py-3 fw-bold d-flex align-items-center justify-content-center gap-2" id="submit-btn">
+                            <i class="bi bi-shield-shaded"></i>
+                            ANALYZE FILE
+                        </button>
+                    </form>
+
+                    <!-- Pipeline Checklist -->
+                    <div class="mt-4 pt-4 border-top border-dark-glow">
+                        <h6 class="text-cyan fw-bold fs-7 tracking-wider text-uppercase mb-3">Detection Pipeline</h6>
+                        <ul class="list-unstyled d-flex flex-column gap-2 fs-8 text-secondary">
+                            <li class="d-flex align-items-center gap-2">
+                                <i class="bi bi-check-circle-fill text-cyan"></i> Custom PHP Lexical Tokenizer
+                            </li>
+                            <li class="d-flex align-items-center gap-2">
+                                <i class="bi bi-check-circle-fill text-cyan"></i> TF-IDF Vectorization Engine (256 Features)
+                            </li>
+                            <li class="d-flex align-items-center gap-2">
+                                <i class="bi bi-check-circle-fill text-cyan"></i> 42-Layer Dense Neural Network Forward Pass
+                            </li>
+                            <li class="d-flex align-items-center gap-2">
+                                <i class="bi bi-check-circle-fill text-cyan"></i> Heuristic Backdoor Feature Matcher
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Results Panel / Default Prompt -->
+        <div class="col-lg-7">
+            {% if result %}
+                {% if result.error %}
+                    <!-- Error Box -->
+                    <div class="card card-cyber bg-darker border-danger-glow h-100">
+                        <div class="card-body p-5 text-center d-flex flex-column justify-content-center align-items-center">
+                            <i class="bi bi-x-octagon text-danger fs-1 mb-3"></i>
+                            <h4 class="text-danger fw-bold">Analysis Failed</h4>
+                            <p class="text-secondary mt-2 mb-0">{{ result.error }}</p>
+                        </div>
+                    </div>
+                {% else %}
+                    <!-- Prediction Result Card -->
+                    <div class="card card-cyber bg-darker {% if result.is_malicious %}border-danger-glow{% else %}border-success-glow{% endif %} h-100">
+                        <div class="card-header border-bottom {% if result.is_malicious %}border-danger-glow bg-danger-glow{% else %}border-success-glow bg-success-glow{% endif %} d-flex justify-content-between align-items-center p-3">
+                            <span class="fw-bold tracking-wider text-uppercase d-flex align-items-center gap-2">
+                                {% if result.is_malicious %}
+                                    <i class="bi bi-bug-fill fs-5"></i> THREAT DETECTED
+                                {% else %}
+                                    <i class="bi bi-shield-check fs-5"></i> FILE VERIFIED
+                                {% endif %}
+                            </span>
+                            <span class="badge bg-dark px-3 py-2 rounded-pill font-mono fs-7">
+                                {{ filename }}
+                            </span>
+                        </div>
+
+                        <div class="card-body p-4">
+                            <!-- Verdict Dashboard -->
+                            <div class="row align-items-center g-3 mb-4">
+                                <div class="col-sm-6 text-center text-sm-start">
+                                    <h6 class="text-secondary tracking-wider text-uppercase fs-8 mb-1">Model Classification Verdict</h6>
+                                    <h2 class="{% if result.is_malicious %}text-danger-glow{% else %}text-success-glow{% endif %} fw-extrabold mb-0">
+                                        {% if result.is_malicious %}MALICIOUS WEBSHELL{% else %}SAFE FILE{% endif %}
+                                    </h2>
+                                </div>
+                                <div class="col-sm-6 text-center text-sm-end border-sm-start border-dark-glow">
+                                    <h6 class="text-secondary tracking-wider text-uppercase fs-8 mb-1">Model Confidence</h6>
+                                    <h3 class="font-mono fw-bold text-white mb-0">
+                                        {% widthratio result.confidence 1 100 %}%
+                                    </h3>
+                                </div>
+                            </div>
+
+                            <!-- Neural Network Model Details -->
+                            <div class="bg-dark-glow rounded p-3 mb-4 border border-dark-glow">
+                                <h6 class="text-cyan fw-bold fs-7 tracking-wider text-uppercase mb-2">Neural Network Activation Details</h6>
+                                <div class="row g-2 font-mono fs-8 text-secondary">
+                                    <div class="col-6">Sigmoid Output: <span class="text-white">{{ result.raw_sigmoid|floatformat:6 }}</span></div>
+                                    <div class="col-6">Classification Threshold: <span class="text-white">0.500000</span></div>
+                                    <div class="col-6">Token Count: <span class="text-white">{{ result.tokens_count }}</span></div>
+                                    <div class="col-6">Feature Dimensions: <span class="text-white">256 (TF-IDF)</span></div>
+                                </div>
+                            </div>
+
+                            <!-- Suspicious Heuristic Matcher -->
+                            <div class="mb-0">
+                                <h6 class="text-cyan fw-bold fs-7 tracking-wider text-uppercase mb-3">Heuristic Indicators Match Matrix</h6>
+                                {% if suspicious_indicators %}
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for indicator in suspicious_indicators %}
+                                            <span class="badge bg-dark-glow border border-danger-glow text-danger-glow px-3 py-2 rounded d-flex align-items-center gap-2 fs-8 font-mono">
+                                                <i class="bi bi-lightning-fill"></i>
+                                                {{ indicator.name }}: {{ indicator.count }}
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-dark border border-dark-glow d-flex align-items-center gap-2 mb-0 py-3 fs-8 text-secondary">
+                                        <i class="bi bi-shield-fill-check text-success-glow fs-6"></i>
+                                        No suspicious function calls or obfuscation patterns matched raw heuristics.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% else %}
+                <!-- Idle State Console Screen -->
+                <div class="card card-cyber bg-darker border-dark-glow h-100">
+                    <div class="card-body p-5 text-center d-flex flex-column justify-content-center align-items-center h-100">
+                        <div class="radar-scan mb-4">
+                            <i class="bi bi-cpu text-cyan-glow fs-1"></i>
+                        </div>
+                        <h4 class="text-white fw-bold">Neural Net Status: Active & Ready</h4>
+                        <p class="text-secondary max-width-sm mx-auto fs-7 mt-2">
+                            Select a PHP script on the left console to trigger numerical vectorization and begin scanning.
+                        </p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Code Preview Section (Renders if scan results exist) -->
+    {% if result and not result.error %}
+        <div class="row justify-content-center mt-4">
+            <div class="col-lg-12">
+                <div class="card card-cyber bg-darker border-dark-glow">
+                    <div class="card-header border-bottom border-dark-glow bg-dark-glow d-flex align-items-center justify-content-between p-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-file-earmark-code text-cyan fs-5"></i>
+                            <h5 class="mb-0 fw-bold tracking-wide">STATIC CODE ANALYSIS</h5>
+                        </div>
+                        <span class="text-secondary font-mono fs-8">Previewing first 1,500 characters</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <pre class="code-preview font-mono text-light p-4 mb-0"><code>{{ file_content_preview }}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Educational Info Card -->
+    <div class="row justify-content-center mt-5">
+        <div class="col-lg-12">
+            <div class="card bg-darker border-dark-glow">
+                <div class="card-body p-4">
+                    <h5 class="text-white fw-bold mb-3 d-flex align-items-center gap-2">
+                        <i class="bi bi-info-circle text-cyan"></i>
+                        How does this Neural Network Model work?
+                    </h5>
+                    <div class="row g-4 fs-7 text-secondary">
+                        <div class="col-md-6">
+                            <h6 class="text-cyan fw-bold mb-2">1. Mathematical Feature Extraction</h6>
+                            <p class="mb-0">
+                                First, the raw PHP script undergoes tokenization using alphanumeric regex groupings. The tokens are weighted against the training dataset's global vocabulary using a custom TF-IDF (Term Frequency-Inverse Document Frequency) formula. This maps the script's textual composition into a dense <strong>256-dimensional numerical vector</strong> representing semantic keyword distributions.
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-cyan fw-bold mb-2">2. 42-Layer Forward Propagation</h6>
+                            <p class="mb-0">
+                                The vector is passed as input into a custom neural network consisting of an input layer, <strong>40 deep ReLU-activated hidden layers</strong> (64 neurons each), and a final <strong>Sigmoid output layer</strong>. This architecture was built using He initialization to prevent vanishing gradients, and momentum-based gradient descent during the optimization phase.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add visual loading state upon scan form submission
+    const form = document.getElementById('scan-form');
+    const submitBtn = document.getElementById('submit-btn');
+
+    if (form && submitBtn) {
+        form.addEventListener('submit', () => {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> MODEL INFERENCE IN PROGRESS...';
+        });
+    }
+</script>
+{% endblock %}

