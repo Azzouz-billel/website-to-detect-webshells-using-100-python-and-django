@@ -14,7 +14,7 @@
         },
         {
             "src": "/(.*)",
-            "dest": "detector/wsgi.py"
+            "dest": "scanner/wsgi.py"
         }
     ]
 }
